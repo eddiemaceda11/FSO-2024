@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 type Note = {
   id: number;
@@ -6,10 +7,12 @@ type Note = {
   important: boolean;
 };
 
-type NotesProps = {
-  notesArr: Note[];
-  setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
-};
+// type NotesProps = {
+//   notesArr: Note[];
+//   setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
+// };
+
+const BASE_URL = "http://localhost:3001/notes";
 
 // Component for an individual Note
 const Note = ({ content }: { content: string }) => {
@@ -17,9 +20,17 @@ const Note = ({ content }: { content: string }) => {
 };
 
 // Component for all of our Notes
-const Notes = ({ notesArr, setNotes }: NotesProps) => {
+const Notes = () => {
+  const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState("a new note...");
   const [showAll, setShowAll] = useState(true);
+
+  useEffect(() => {
+    axios.get(BASE_URL).then((res) => {
+      console.log("promise fulfilled");
+      setNotes(res.data);
+    });
+  }, []);
 
   // On form submit, we will add the new note to our notes array
   const addNote = (e: React.FormEvent<HTMLFormElement>) => {
@@ -28,9 +39,9 @@ const Notes = ({ notesArr, setNotes }: NotesProps) => {
     const noteObject = {
       content: newNote,
       important: Math.random() < 0.5,
-      id: notesArr.length + 1,
+      id: notes.length + 1,
     };
-    setNotes([...notesArr, noteObject]);
+    setNotes([...notes, noteObject]);
     setNewNote("");
   };
 
@@ -38,7 +49,7 @@ const Notes = ({ notesArr, setNotes }: NotesProps) => {
     setNewNote(e.target.value);
   };
 
-  const notesToShow = showAll ? notesArr : notesArr.filter((note) => note.important === true);
+  const notesToShow = showAll ? notes : notes.filter((note) => note.important === true);
 
   return (
     <div>
