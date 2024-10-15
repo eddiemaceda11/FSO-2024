@@ -1,29 +1,28 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
 import "./App.css";
 
 import Notes from "./components/notes/Notes";
 
+const BASE_URL = "http://localhost:3001/notes";
+
 function App() {
-  const notes = [
-    {
-      id: 1,
-      content: "HTML is easy",
-      important: true,
-    },
-    {
-      id: 2,
-      content: "Browser can execute only JavaScript",
-      important: false,
-    },
-    {
-      id: 3,
-      content: "GET and POST are the most important methods of HTTP protocol",
-      important: true,
-    },
-  ];
+  const [notes, setNotes] = useState([]);
+
+  useEffect(() => {
+    axios.get(BASE_URL).then((res) => {
+      console.log("promise fulfilled");
+      setNotes(res.data);
+    });
+  }, []);
+  console.log("render", notes.length, "notes");
 
   return (
     <div className="app">
-      <Notes notesArr={notes} />
+      <Notes
+        notesArr={notes}
+        setNotes={setNotes}
+      />
     </div>
   );
 }

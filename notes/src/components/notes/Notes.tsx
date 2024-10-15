@@ -8,34 +8,37 @@ type Note = {
 
 type NotesProps = {
   notesArr: Note[];
+  setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
 };
 
+// Component for an individual Note
 const Note = ({ content }: { content: string }) => {
   return <li>{content}</li>;
 };
 
-const Notes = ({ notesArr }: NotesProps) => {
-  const [notes, setNotes] = useState(notesArr);
+// Component for all of our Notes
+const Notes = ({ notesArr, setNotes }: NotesProps) => {
   const [newNote, setNewNote] = useState("a new note...");
   const [showAll, setShowAll] = useState(true);
 
-  const addNote = (e) => {
+  // On form submit, we will add the new note to our notes array
+  const addNote = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Create a new note object with the current inputted information
     const noteObject = {
       content: newNote,
       important: Math.random() < 0.5,
-      id: notes.length + 1,
+      id: notesArr.length + 1,
     };
-    setNotes([...notes, noteObject]);
+    setNotes([...notesArr, noteObject]);
     setNewNote("");
   };
 
-  const handleNoteChange = (e) => {
-    console.log(e.target.value);
+  const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewNote(e.target.value);
   };
 
-  const notesToShow = showAll ? notes : notes.filter((note) => note.important === true);
+  const notesToShow = showAll ? notesArr : notesArr.filter((note) => note.important === true);
 
   return (
     <div>
