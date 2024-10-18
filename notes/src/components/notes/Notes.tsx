@@ -1,36 +1,33 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 
-type Note = {
-  id: number;
-  content: string;
-  important: boolean;
-};
-
-// type NotesProps = {
-//   notesArr: Note[];
-//   setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
-// };
-
-const BASE_URL = "http://localhost:3001/notes";
+import { type Note } from "../../types";
+import noteService from "../../services/notes";
 
 // Component for an individual Note
-const Note = ({ content }: { content: string }) => {
-  return <li>{content}</li>;
+const Note = ({ note, toggleImportance }: { note: Note; toggleImportance: () => void }) => {
+  const label = note.important ? "make not important" : "make important";
+
+  return (
+    <li>
+      {note.content}
+      <button onClick={toggleImportance}>{label}</button>
+    </li>
+  );
 };
 
 // Component for all of our Notes
 const Notes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
-  const [newNote, setNewNote] = useState("a new note...");
+  const [newNote, setNewNote] = useState("");
   const [showAll, setShowAll] = useState(true);
 
   useEffect(() => {
-    axios.get(BASE_URL).then((res) => {
-      console.log("promise fulfilled");
-      setNotes(res.data);
+    noteService.getAll().then((initialNotes) => {
+      setNotes(initialNotes);
     });
   }, []);
+
+  /* HELPER FUNCTIONS */
 
   // On form submit, we will add the new note to our notes array
   const addNote = (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,14 +36,35 @@ const Notes = () => {
     const noteObject = {
       content: newNote,
       important: Math.random() < 0.5,
-      id: notes.length + 1,
     };
-    setNotes([...notes, noteObject]);
-    setNewNote("");
+    noteService.create(noteObject as Note).then((returnedNote) => {
+      setNotes(notes.concat(returnedNote));
+      setNewNote("");
+    });
   };
 
   const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewNote(e.target.value);
+  };
+
+  // Toggle the important property of a note using the notes id to update
+  const toggleImportanceOf = (id: number) => {
+    // find the specific note we want to update
+    const note = notes.find((note) => note.id === id);
+    // update the note's important property
+    const changedNote = { ...note, important: note?.important };
+
+    // Make the put request to update our note on the server
+    noteService
+      .update(id, changedNote as Note)
+      .then((returnedNote) => {
+        // update our state/ui/notes array with with servers response
+        setNotes(notes.map((note) => (note.id === id ? returnedNote : note)));
+      })
+      .catch((error) => {
+        alert(`The note '${note?.content}' was already deleted from the server`);
+        setNotes(notes.filter((note) => note.id !== id));
+      });
   };
 
   const notesToShow = showAll ? notes : notes.filter((note) => note.important === true);
@@ -61,7 +79,8 @@ const Notes = () => {
         {notesToShow.map((note) => (
           <Note
             key={note.id}
-            content={note.content}
+            note={note}
+            toggleImportance={() => toggleImportanceOf(note.id)}
           />
         ))}
       </ul>
