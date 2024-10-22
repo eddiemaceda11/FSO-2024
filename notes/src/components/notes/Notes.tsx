@@ -3,6 +3,14 @@ import { useState, useEffect } from "react";
 import { type Note } from "../../types";
 import noteService from "../../services/notes";
 
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null;
+  }
+
+  return <div className="error">{message}</div>;
+};
+
 // Component for an individual Note
 const Note = ({ note, toggleImportance }: { note: Note; toggleImportance: () => void }) => {
   const label = note.important ? "make not important" : "make important";
@@ -20,6 +28,7 @@ const Notes = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState("");
   const [showAll, setShowAll] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("some error happened...");
 
   useEffect(() => {
     noteService.getAll().then((initialNotes) => {
@@ -62,7 +71,10 @@ const Notes = () => {
         setNotes(notes.map((note) => (note.id === id ? returnedNote : note)));
       })
       .catch((error) => {
-        alert(`The note '${note?.content}' was already deleted from the server`);
+        setErrorMessage(`Note '${note.content}' was already removed from server`);
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
         setNotes(notes.filter((note) => note.id !== id));
       });
   };
@@ -72,6 +84,7 @@ const Notes = () => {
   return (
     <div>
       <h1>Notes</h1>
+      <Notification message={errorMessage} />
       <div>
         <button onClick={() => setShowAll(!showAll)}>{showAll ? "important" : "all"}</button>
       </div>

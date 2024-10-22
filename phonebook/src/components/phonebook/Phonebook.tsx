@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-
-const BASE_URL = "http://localhost:3001/persons";
+import phoneService from "../../services/phonebook";
 
 type Person = {
   name: string;
@@ -15,8 +13,8 @@ const Phonebook = () => {
   const [newNumber, setNewNumber] = useState("");
 
   useEffect(() => {
-    axios.get(BASE_URL).then((res) => {
-      setPersons(res.data);
+    phoneService.getAll().then((persons) => {
+      setPersons(persons);
     });
   }, []);
 
@@ -37,18 +35,37 @@ const Phonebook = () => {
     // if the user does not exist
     else {
       // generate an id for the new person
-      const id = persons.length + 1;
-      // add the new person to the array, update state
-      setPersons([...persons, { name: newName, number: newNumber, id: id }]);
+      const newPerson = {
+        name: newName,
+        number: newNumber,
+      };
+
+      phoneService.addNew(newPerson).then((returnedPerson) => {
+        setPersons([...persons, returnedPerson]);
+      });
+
       // reset input fields to blank
       setNewName("");
       setNewNumber("");
     }
   };
+  const handleDelete = (id) => {
+    if (window.confirm("delete?")) {
+      phoneService.deletePerson(id).then((res) => {
+        const returnedPerson = res.data;
+        const updatedPersons = persons.filter((person) => {
+          // return true - added to new arr
+          // return false - gets filtered out
+          return person.id != returnedPerson.id;
+        });
+        setPersons(updatedPersons);
+      });
+    }
+  };
 
   return (
     <div>
-      <h2>Phonebook</h2>
+      <h1>Phonebook</h1>
       <form onSubmit={addPerson}>
         <div>
           name:
@@ -73,8 +90,9 @@ const Phonebook = () => {
       <h2>Numbers</h2>
       {persons.map((person) => {
         return (
-          <p>
+          <p key={person.id}>
             {person.name}: {person.number}
+            <button onClick={() => handleDelete(person.id)}>delete</button>
           </p>
         );
       })}

@@ -17,7 +17,7 @@
 }
 */
 
-import "./App.css";
+// import "./App.css";
 import Phonebook from "./components/phonebook/Phonebook";
 
 const App = () => {
