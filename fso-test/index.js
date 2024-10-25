@@ -19,6 +19,24 @@ let notes = [
   },
 ];
 
+// Middleware function that will immediately log the type of request, the path, and any information in the request body.
+const requestLogger = (req, res, next) => {
+  console.log("Method: ", req.method);
+  console.log("Path: ", req.path);
+  console.log("Body: ", req.body);
+  console.log("---");
+  next();
+};
+
+// NOTE -> Middleware's run in the order the are written, so the order and placement is very important
+app.use(express.json());
+app.use(requestLogger);
+
+// Middleware function that will return a json response to the client if the endpoint is invalid/not found
+const unknownEndpoint = (req, res) => {
+  res.status(404).send({ error: "unknown endpoint" });
+};
+
 app.get("/", (req, res) => {
   res.send("<h1>Hello World</h1>");
 });
@@ -43,6 +61,8 @@ app.delete("/api/notes/:id", (req, res) => {
   notes = notes.filter((note) => note.id !== id);
   res.status(204).end();
 });
+
+app.use(unknownEndpoint);
 
 const PORT = 3001;
 app.listen(PORT, () => {
