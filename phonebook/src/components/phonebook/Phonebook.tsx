@@ -41,6 +41,7 @@ const Phonebook = () => {
       };
 
       phoneService.addNew(newPerson).then((returnedPerson) => {
+        console.log(returnedPerson, ": added");
         setPersons([...persons, returnedPerson]);
       });
 
@@ -49,10 +50,11 @@ const Phonebook = () => {
       setNewNumber("");
     }
   };
-  const handleDelete = (id) => {
+  const handleDelete = (id: number) => {
     if (window.confirm("delete?")) {
       phoneService.deletePerson(id).then((res) => {
         const returnedPerson = res.data;
+        console.log(returnedPerson, ": deleted");
         const updatedPersons = persons.filter((person) => {
           // return true - added to new arr
           // return false - gets filtered out
