@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseUrl = "http://localhost:3001/notes";
+const baseUrl = "http://localhost:3001/api/notes";
 
 import { type Note } from "../types";
 
@@ -24,7 +24,7 @@ const create = (newObject: Note) => {
 
 const update = (id: number, newObject: Note) => {
   const request = axios.put(`${baseUrl}/${id}`, newObject);
-  return request.then((res) => res.data).;
+  return request.then((res) => res.data);
 };
 
 export default {
